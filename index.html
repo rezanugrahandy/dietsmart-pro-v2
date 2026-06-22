@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DietSmart Pro - Bonus Buku Diet</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --primary: #0d7377;
+            --secondary: #14a085;
+            --accent: #ff6b35;
+            --dark: #0a1628;
+            --gradient-1: #00d4aa;
+            --gradient-2: #00a8e8;
+            --white: #fff;
+            --glass: rgba(255,255,255,0.08);
+            --glass-border: rgba(255,255,255,0.15);
+            --shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--dark);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        .bg-hero {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=1920&q=80') center/cover no-repeat;
+            z-index: -2;
+        }
+        
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(10,22,40,0.95), rgba(13,115,119,0.9), rgba(10,22,40,0.95));
+            z-index: -1;
+        }
+        
+        .particles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: -1; overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute; width: 4px; height: 4px;
+            background: rgba(255,255,255,0.3); border-radius: 50%;
+            animation: float 15s infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--dark), #0d2b3e);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999; transition: opacity 0.5s ease-out;
+        }
+        
+        .loading-screen.hidden { opacity: 0; pointer-events: none; }
+        
+        .spinner {
+            width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: var(--gradient-1); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 28px; margin-bottom: 20px; box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+        
+        .hero-title {
+            font-size: 2.4rem; font-weight: 900; margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; letter-spacing: -1px;
+        }
+        
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 14px 28px; border: none; border-radius: 14px; font-size: 1rem;
+            font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            color: var(--dark); font-weight: 700;
+        }
+        
+        .btn-outline {
+            background: transparent; color: var(--gradient-1); border: 2px solid var(--gradient-1);
+        }
+        
+        .btn-outline:hover { background: rgba(0,212,170,0.1); }
+        
+        .hidden { display: none !important; }
+        
+        .animate-fadeInUp { animation: fadeInUp 0.7s ease-out forwards; opacity: 0; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        
+        .auth-screen {
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px; text-align: center;
+        }
+        
+        .auth-card {
+            background: var(--glass); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 24px;
+            padding: 40px 32px; max-width: 480px; width: 100%; box-shadow: var(--shadow);
+        }
+        
+        .form-group { margin-bottom: 18px; text-align: left; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 0.9rem; opacity: 0.9; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.07);
+            border: 1px solid var(--glass-border); border-radius: 14px;
+            color: var(--white); font-size: 1rem; transition: all 0.3s ease;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: var(--gradient-1); background: rgba(255,255,255,0.12);
+            box-shadow: 0 0 20px rgba(0,212,170,0.15);
+        }
+        
+        .code-input { font-family: 'Courier New', monospace; letter-spacing: 2px; font-size: 1.1rem; text-align: center; text-transform: uppercase; }
+        
+        .status-pill {
+            display: inline-block; padding: 8px 16px; border-radius: 50px;
+            background: rgba(0,212,170,0.15); border: 1px solid rgba(0,212,170,0.3);
+            color: var(--gradient-1); font-size: 0.85rem; margin-bottom: 20px;
+        }
+        
+        .alert { padding: 16px; border-radius: 14px; margin-bottom: 16px; text-align: center; font-weight: 600; animation: fadeInUp 0.4s ease-out; }
+        .alert-success { background: rgba(0,212,170,0.15); border: 1px solid rgba(0,212,170,0.3); color: var(--gradient-1); }
+        .alert-error { background: rgba(231,111,81,0.15); border: 1px solid rgba(231,111,81,0.3); color: #e76f51; }
+        .alert-info { background: rgba(0,168,232,0.15); border: 1px solid rgba(0,168,232,0.3); color: var(--gradient-2); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+        .stat-box {
+            background: var(--glass); backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); border-radius: 18px;
+            padding: 24px 16px; text-align: center; transition: all 0.3s ease;
+        }
+        .stat-box:hover { transform: scale(1.03); border-color: var(--gradient-1); }
+        .stat-value { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .stat-label { font-size: 0.8rem; opacity: 0.7; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .tab-nav { display: flex; gap: 10px; overflow-x: auto; padding: 4px; margin-bottom: 28px; scrollbar-width: none; }
+        .tab-nav::-webkit-scrollbar { display: none; }
+        .tab-btn { flex-shrink: 0; padding: 12px 20px; border: none; border-radius: 50px; background: var(--glass); backdrop-filter: blur(10px); color: var(--white); font-weight: 600; cursor: pointer; font-size: 0.85rem; border: 1px solid var(--glass-border); transition: all 0.3s ease; white-space: nowrap; }
+        .tab-btn:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+        .tab-btn.active { background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2)); border-color: transparent; }
+        
+        .tab-content { animation: fadeInUp 0.4s ease-out; }
+        
+        .meal-slot { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+        .meal-row { display: grid; grid-template-columns: 1.2fr 100px 90px 90px 90px 90px; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .meal-row input, .meal-row select { padding: 10px; background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--white); font-size: 0.85rem; }
+        
+        .table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--glass-border); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: var(--white); padding: 14px; text-align: left; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.8rem; }
+        td { padding: 14px; border-bottom: 1px solid var(--glass-border); }
+        tr:hover { background: rgba(0,212,170,0.08); }
+        
+        @media(max-width: 640px) {
+            .hero-title { font-size: 1.8rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .meal-row { grid-template-columns: 1fr 70px 55px 55px 55px 55px; }
+            .container { padding: 12px; }
+            .auth-card { padding: 28px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="bg-hero"></div>
+    <div class="bg-overlay"></div>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading">
+        <div class="spinner"></div>
+        <h2 style="margin-top: 24px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">DietSmart Pro</h2>
+        <p style="margin-top: 8px; opacity: 0.6; font-size: 0.9rem;">Memuat aplikasi...</p>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="screen-login" class="auth-screen hidden">
+        <div class="auth-card animate-fadeInUp">
+            <div style="font-size: 4rem; margin-bottom: 16px; animation: bounce 2s infinite;">📚</div>
+            <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Bonus Eksklusif Buku</h2>
+            <p style="opacity: 0.7; margin-bottom: 28px; font-size: 0.95rem;">Silakan login untuk mengakses aplikasi DietSmart Pro.</p>
+            
+            <div style="padding: 16px; background: rgba(255,255,255,0.05); border-radius: 14px; margin-bottom: 20px; text-align: left;">
+                <p style="font-size: 0.9rem; opacity: 0.8; line-height: 1.6;">
+                    🔐 <strong>Keamanan:</strong> Data Anda aman dan tersimpan di browser.<br>
+                    📊 <strong>Fitur:</strong> TDEE Calculator, Meal Planner, Progress Tracker.<br>
+                    💾 <strong>Cloud:</strong> Data tersimpan otomatis di perangkat Anda.
+                </p>
+            </div>
+            
+            <button class="btn btn-primary" onclick="activateApp()">🚀 Masuk dengan Kode Aktivasi</button>
+            <p style="margin-top: 16px; font-size: 0.8rem; opacity: 0.5;">Hubungi admin: <strong>@rezanugra</strong></p>
+        </div>
+    </div>
+
+    <!-- Activation Screen -->
+    <div id="screen-activation" class="auth-screen hidden">
+        <div class="auth-card animate-fadeInUp">
+            <div style="font-size: 4rem; margin-bottom: 16px;">🔑</div>
+            <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Aktivasi Aplikasi</h2>
+            <p style="opacity: 0.7; margin-bottom: 28px; font-size: 0.95rem;">Masukkan kode aktivasi dari buku Anda.</p>
+            
+            <div class="form-group">
+                <label>Kode Aktivasi</label>
+                <input type="text" id="activation-code" class="code-input" placeholder="FITME-2026A-XXXXXX" maxlength="20">
+                <p style="font-size: 0.75rem; opacity: 0.5; margin-top: 6px;">Format: FITME-2026A-XXXXXX</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="activation-nama" placeholder="Contoh: Budi Santoso">
+            </div>
+            
+            <button class="btn btn-primary" id="btn-activate" onclick="doActivate()">✅ Aktifkan Sekarang</button>
+            <button class="btn btn-outline" style="margin-top: 10px;" onclick="showScreen('screen-login')">⬅️ Kembali</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="screen-app" class="hidden">
+        <div class="container">
+            <!-- Header -->
+            <div class="glass-card" style="text-align: center; padding: 40px 20px 30px;">
+                <h1 class="hero-title">🥗 DietSmart Pro</h1>
+                <p id="welcome-text" style="font-size: 1.1rem; opacity: 0.8; font-weight: 300;">Transformasi Tubuh Dimulai dari Piringmu</p>
+            </div>
+
+            <!-- Navigation -->
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="showTab('dashboard')">🏠 Dashboard</button>
+                <button class="tab-btn" onclick="showTab('tdee')">📊 TDEE</button>
+                <button class="tab-btn" onclick="showTab('meal')">🍱 Meal Plan</button>
+                <button class="tab-btn" onclick="showTab('progress')">📈 Progress</button>
+                <button class="tab-btn" onclick="showTab('cheatsheet')">📋 Cheat Sheet</button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="tab-dashboard" class="tab-content">
+                <div class="glass-card animate-fadeInUp delay-1">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 20px;">👤 Profil Anda</h3>
+                    <div id="profile-info">
+                        <p style="opacity: 0.7;">Belum ada data. Hitung TDEE Anda terlebih dahulu.</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="dash-bmr">-</div>
+                        <div class="stat-label">BMR (kkal)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="dash-tdee">-</div>
+                        <div class="stat-label">TDEE (kkal)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="dash-berat">-</div>
+                        <div class="stat-label">Berat (kg)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="dash-hari">0</div>
+                        <div class="stat-label">Hari Diet</div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px;">📅 Status Hari Ini</h3>
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                        <span>Meal Plan: <span id="status-meal" style="color: #f4a261;">❌ Belum</span></span>
+                        <span>Progress: <span id="status-progress" style="color: #f4a261;">❌ Belum</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TDEE Tab -->
+            <div id="tab-tdee" class="tab-content hidden">
+                <div class="glass-card animate-fadeInUp">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 20px;">🔥 Kalkulator TDEE</h3>
+                    <p style="margin-bottom: 20px; opacity: 0.7; font-size: 0.95rem;">Masukkan data pribadi untuk menghitung kebutuhan kalori harian Anda.</p>
+                    
+                    <div class="form-group">
+                        <label>Nama Lengkap</label>
+                        <input type="text" id="tdee-nama" placeholder="Contoh: Budi Santoso">
+                    </div>
+                    <div class="form-group">
+                        <label>Usia (tahun)</label>
+                        <input type="number" id="tdee-usia" placeholder="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Jenis Kelamin</label>
+                        <select id="tdee-jk">
+                            <option value="">Pilih</option>
+                            <option value="L">Laki-laki</option>
+                            <option value="P">Perempuan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Berat Badan (kg)</label>
+                        <input type="number" id="tdee-berat" step="0.1" placeholder="75.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Tinggi Badan (cm)</label>
+                        <input type="number" id="tdee-tinggi" placeholder="170">
+                    </div>
+                    <div class="form-group">
+                        <label>Level Aktivitas</label>
+                        <select id="tdee-aktivitas">
+                            <option value="">Pilih</option>
+                            <option value="0">🛋️ Sedentary (jarang olahraga)</option>
+                            <option value="1">🚶 Lightly Active (1-2x/minggu)</option>
+                            <option value="2">🏃 Moderately Active (3-5x/minggu)</option>
+                            <option value="3">💪 Very Active (6-7x/minggu)</option>
+                            <option value="4">🔥 Super Active (2x/hari)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="hitungTDEE()">🔥 Hitung TDEE Saya</button>
+                </div>
+
+                <div id="tdee-result" class="hidden">
+                    <div class="glass-card animate-fadeInUp">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 20px;">✅ Hasil Perhitungan</h3>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-value" id="res-bmr">-</div>
+                                <div class="stat-label">BMR</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="res-tdee">-</div>
+                                <div class="stat-label">TDEE</div>
+                            </div>
+                        </div>
+                        <h4 style="margin: 24px 0 16px; color: var(--gradient-1); font-size: 1.1rem;">🎯 Target Kalori Harian:</h4>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr><th>Tujuan</th><th>Kalori</th><th>Protein</th><th>Karbohidrat</th><th>Lemak</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>🥗 Cut (-20%)</strong></td>
+                                        <td id="res-cut">-</td>
+                                        <td id="res-cut-p">-</td>
+                                        <td id="res-cut-k">-</td>
+                                        <td id="res-cut-l">-</td>
+                                    </tr>
+                                    <tr style="background: rgba(0,212,170,0.08);">
+                                        <td><strong>⚖️ Maintain</strong></td>
+                                        <td id="res-maintain">-</td>
+                                        <td id="res-main-p">-</td>
+                                        <td id="res-main-k">-</td>
+                                        <td id="res-main-l">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>💪 Bulk (+20%)</strong></td>
+                                        <td id="res-bulk">-</td>
+                                        <td id="res-bulk-p">-</td>
+                                        <td id="res-bulk-k">-</td>
+                                        <td id="res-bulk-l">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meal Plan Tab -->
+            <div id="tab-meal" class="tab-content hidden">
+                <div class="glass-card animate-fadeInUp">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px;">🍱 Meal Planner</h3>
+                    <p style="margin-bottom: 16px; font-size: 0.95rem;">Target Kalori: <strong id="meal-target" style="color: var(--gradient-1); font-size: 1.2rem;">2,000 kkal</strong></p>
+                    <div id="meal-slots"></div>
+                    <div style="background: linear-gradient(135deg, rgba(0,212,170,0.1), rgba(0,168,232,0.1)); border: 1px solid rgba(0,212,170,0.3); border-radius: 18px; padding: 20px; margin-top: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 1.2rem; margin-bottom: 12px;">
+                            <span>Total Kalori:</span>
+                            <span id="meal-total-kalori" style="color: var(--gradient-1); font-size: 1.4rem;">0 kkal</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 0.9rem; opacity: 0.8;">
+                            <span>🥩 Protein: <strong id="meal-total-p">0g</strong></span>
+                            <span>🍚 Karbohidrat: <strong id="meal-total-k">0g</strong></span>
+                            <span>🥑 Lemak: <strong id="meal-total-l">0g</strong></span>
+                        </div>
+                        <div style="margin-top: 16px; text-align: center;" id="meal-status"></div>
+                    </div>
+                    <button class="btn btn-primary" style="margin-top: 16px;" onclick="simpanMealPlan()">💾 Simpan Meal Plan</button>
+                </div>
+            </div>
+
+            <!-- Progress Tab -->
+            <div id="tab-progress" class="tab-content hidden">
+                <div class="glass-card animate-fadeInUp">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px;">📈 Input Progress Harian</h3>
+                    <div class="form-group">
+                        <label>📅 Tanggal</label>
+                        <input type="date" id="prog-tanggal">
+                    </div>
+                    <div class="form-group">
+                        <label>⚖️ Berat Badan (kg)</label>
+                        <input type="number" id="prog-berat" step="0.1" placeholder="72.5">
+                    </div>
+                    <div class="form-group">
+                        <label>📏 Lingkar Pinggang (cm)</label>
+                        <input type="number" id="prog-pinggang" step="0.1" placeholder="85">
+                    </div>
+                    <div class="form-group">
+                        <label>📏 Lingkar Perut (cm)</label>
+                        <input type="number" id="prog-perut" step="0.1" placeholder="92">
+                    </div>
+                    <div class="form-group">
+                        <label>📝 Catatan</label>
+                        <input type="text" id="prog-catatan" placeholder="Hari ini jogging 30 menit, minum 3L air">
+                    </div>
+                    <button class="btn btn-primary" onclick="simpanProgress()">💾 Simpan Progress</button>
+                </div>
+                <div class="glass-card animate-fadeInUp delay-1">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px;">📊 Riwayat Progress</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>No</th><th>Tanggal</th><th>Berat</th><th>Pinggang</th><th>Perut</th><th>Catatan</th></tr>
+                            </thead>
+                            <tbody id="progress-tbody">
+                                <tr><td colspan="6" style="text-align: center; opacity: 0.6; padding: 30px;">Belum ada data</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cheat Sheet Tab -->
+            <div id="tab-cheatsheet" class="tab-content hidden">
+                <div id="cs-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== PARTICLES =====
+        (function(){
+            var p = document.getElementById('particles');
+            if(!p) return;
+            for(var i = 0; i < 30; i++){
+                var d = document.createElement('div');
+                d.className = 'particle';
+                d.style.left = Math.random() * 100 + '%';
+                d.style.animationDuration = (10 + Math.random() * 20) + 's';
+                d.style.animationDelay = (Math.random() * 15) + 's';
+                d.style.width = d.style.height = (2 + Math.random() * 4) + 'px';
+                p.appendChild(d);
+            }
+        })();
+
+        // ===== STATE =====
+        var foodDatabase = [
+            { id: 1, nama: "Ayam Rebus (Dada)", kategori: "Protein", kalori: 165, protein: 31.0, karbo: 0, lemak: 3.6, porsi: 100 },
+            { id: 2, nama: "Telur Rebus", kategori: "Protein", kalori: 155, protein: 13.0, karbo: 1.1, lemak: 11.0, porsi: 60 },
+            { id: 3, nama: "Nasi Putih", kategori: "Karbohidrat", kalori: 175, protein: 3.5, karbo: 38.0, lemak: 0.5, porsi: 150 },
+            { id: 4, nama: "Bayam Rebus", kategori: "Sayuran", kalori: 23, protein: 2.9, karbo: 3.6, lemak: 0.4, porsi: 100 },
+            { id: 5, nama: "Pisang", kategori: "Buah", kalori: 89, protein: 1.1, karbo: 23.0, lemak: 0.3, porsi: 100 }
+        ];
+        
+        var tdeeData = null;
+        var progressData = [];
+        var currentUser = null;
+        var MEALS = ['Sarapan', 'Snack Pagi', 'Makan Siang', 'Snack Sore', 'Makan Malam'];
+
+        // ===== AUTH FLOW =====
+        function init(){
+            console.log('init() called');
+            
+            // Check if already activated
+            var savedUser = localStorage.getItem('dietsmart_user');
+            if(savedUser){
+                currentUser = JSON.parse(savedUser);
+                showScreen('screen-app');
+                document.getElementById('welcome-text').textContent = 'Selamat datang, ' + currentUser.nama + '! 🎉';
+                loadAppData();
+                return;
+            }
+            
+            showScreen('screen-login');
+        }
+
+        function showScreen(screenId){
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-activation').classList.add('hidden');
+            document.getElementById('screen-app').classList.add('hidden');
+            
+            var target = document.getElementById(screenId);
+            if(target){
+                target.classList.remove('hidden');
+                console.log('Showing screen:', screenId);
+            }
+        }
+
+        function activateApp(){
+            showScreen('screen-activation');
+        }
+
+        function doActivate(){
+            var code = document.getElementById('activation-code').value.trim().toUpperCase();
+            var nama = document.getElementById('activation-nama').value.trim();
+            var btn = document.getElementById('btn-activate');
+            
+            if(!code){ showAlert('⚠️ Masukkan kode aktivasi', 'error'); return; }
+            if(!nama){ showAlert('⚠️ Masukkan nama lengkap', 'error'); return; }
+            
+            // Validate code format
+            if(!code.startsWith('FITME-')){
+                showAlert('❌ Format kode tidak valid. Harus dimulai dengan FITME-', 'error');
+                return;
+            }
+            
+            btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0"></div> Memverifikasi...';
+            btn.disabled = true;
+            
+            // Simulate verification (in production, this would check against a database)
+            setTimeout(function(){
+                currentUser = { nama: nama, kode: code, email: 'user@example.com' };
+                localStorage.setItem('dietsmart_user', JSON.stringify(currentUser));
+                
+                btn.innerHTML = '✅ Aktifkan Sekarang';
+                btn.disabled = false;
+                
+                showAlert('🎉 Aktivasi berhasil!', 'success');
+                setTimeout(function(){
+                    showScreen('screen-app');
+                    document.getElementById('welcome-text').textContent = 'Selamat datang, ' + nama + '! 🎉';
+                    loadAppData();
+                }, 1500);
+            }, 1500);
+        }
+
+        function loadAppData(){
+            document.getElementById('prog-tanggal').valueAsDate = new Date();
+            
+            // Load saved TDEE data
+            var savedTDEE = localStorage.getItem('dietsmart_tdee');
+            if(savedTDEE){
+                tdeeData = JSON.parse(savedTDEE);
+                renderDashboard();
+            }
+            
+            // Load saved progress
+            var savedProgress = localStorage.getItem('dietsmart_progress');
+            if(savedProgress){
+                progressData = JSON.parse(savedProgress);
+                renderProgress();
+            }
+            
+            initCheatSheet();
+        }
+
+        function showTab(tabName){
+            document.querySelectorAll('.tab-content').forEach(function(e){ e.classList.add('hidden'); });
+            document.querySelectorAll('.tab-btn').forEach(function(e){ e.classList.remove('active'); });
+            
+            var t = document.getElementById('tab-' + tabName);
+            if(t) t.classList.remove('hidden');
+            
+            if(event && event.target) event.target.classList.add('active');
+            
+            if(tabName === 'dashboard') renderDashboard();
+            if(tabName === 'meal') initMealPlanner();
+            if(tabName === 'progress') renderProgress();
+            if(tabName === 'cheatsheet') initCheatSheet();
+        }
+
+        function renderDashboard(){
+            if(!tdeeData){
+                document.getElementById('profile-info').innerHTML = '<p style="opacity: 0.7;">Belum ada data. Hitung TDEE Anda terlebih dahulu.</p>';
+                return;
+            }
+            
+            document.getElementById('profile-info').innerHTML = 
+                '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">' +
+                '<p><strong style="color: var(--gradient-1);">Nama:</strong> ' + tdeeData.nama + '</p>' +
+                '<p><strong style="color: var(--gradient-1);">Jenis Kelamin:</strong> ' + tdeeData.jenisKelamin + '</p>' +
+                '<p><strong style="color: var(--gradient-1);">Berat:</strong> ' + tdeeData.berat + ' kg</p>' +
+                '<p><strong style="color: var(--gradient-1);">Tinggi:</strong> ' + tdeeData.tinggi + ' cm</p>' +
+                '<p style="grid-column: 1/-1;"><strong style="color: var(--gradient-1);">Aktivitas:</strong> ' + tdeeData.aktivitas + '</p>' +
+                '</div>';
+            
+            document.getElementById('dash-bmr').textContent = tdeeData.bmr.toLocaleString('id-ID');
+            document.getElementById('dash-tdee').textContent = tdeeData.tdee.toLocaleString('id-ID');
+            document.getElementById('dash-berat').textContent = tdeeData.berat;
+            document.getElementById('dash-hari').textContent = progressData.length > 0 ? Math.round((Date.now() - progressData[0].timestamp) / 86400000) : '0';
+        }
+
+        function hitungTDEE(){
+            var data = {
+                nama: document.getElementById('tdee-nama').value,
+                usia: parseInt(document.getElementById('tdee-usia').value),
+                jenisKelamin: document.getElementById('tdee-jk').value,
+                berat: parseFloat(document.getElementById('tdee-berat').value),
+                tinggi: parseFloat(document.getElementById('tdee-tinggi').value),
+                aktivitas: parseInt(document.getElementById('tdee-aktivitas').value)
+            };
+            
+            if(!data.nama || !data.usia || !data.jenisKelamin || !data.berat || !data.tinggi || isNaN(data.aktivitas)){
+                showAlert('⚠️ Semua field wajib diisi!', 'error');
+                return;
+            }
+            
+            var btn = document.querySelector('#tab-tdee .btn-primary');
+            btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0"></div> Menghitung...';
+            btn.disabled = true;
+            
+            // Calculate TDEE
+            var multipliers = [1.2, 1.375, 1.55, 1.725, 1.9];
+            var labels = ["Sedentary", "Lightly Active", "Moderately Active", "Very Active", "Super Active"];
+            var multiplier = multipliers[data.aktivitas] || 1.2;
+            var aktivitasLabel = labels[data.aktivitas] || labels[0];
+            
+            var bmr;
+            if(data.jenisKelamin === 'L'){
+                bmr = (10 * data.berat) + (6.25 * data.tinggi) - (5 * data.usia) + 5;
+            } else {
+                bmr = (10 * data.berat) + (6.25 * data.tinggi) - (5 * data.usia) - 161;
+            }
+            
+            var tdee = Math.round(bmr * multiplier);
+            
+            tdeeData = {
+                nama: data.nama,
+                usia: data.usia,
+                jenisKelamin: data.jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan',
+                berat: data.berat,
+                tinggi: data.tinggi,
+                aktivitas: aktivitasLabel,
+                bmr: Math.round(bmr),
+                tdee: tdee,
+                cut: Math.round(tdee * 0.8),
+                maintain: tdee,
+                bulk: Math.round(tdee * 1.2),
+                makro: {
+                    cut: {
+                        protein: Math.round((tdee * 0.8 * 0.40) / 4),
+                        karbo: Math.round((tdee * 0.8 * 0.30) / 4),
+                        lemak: Math.round((tdee * 0.8 * 0.30) / 9)
+                    },
+                    maintain: {
+                        protein: Math.round((tdee * 0.30) / 4),
+                        karbo: Math.round((tdee * 0.40) / 4),
+                        lemak: Math.round((tdee * 0.30) / 9)
+                    },
+                    bulk: {
+                        protein: Math.round((tdee * 1.2 * 0.30) / 4),
+                        karbo: Math.round((tdee * 1.2 * 0.50) / 4),
+                        lemak: Math.round((tdee * 1.2 * 0.20) / 9)
+                    }
+                }
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('dietsmart_tdee', JSON.stringify(tdeeData));
+            
+            // Show results
+            document.getElementById('tdee-result').classList.remove('hidden');
+            document.getElementById('res-bmr').textContent = tdeeData.bmr.toLocaleString('id-ID');
+            document.getElementById('res-tdee').textContent = tdeeData.tdee.toLocaleString('id-ID');
+            document.getElementById('res-cut').textContent = tdeeData.cut.toLocaleString('id-ID') + ' kkal';
+            document.getElementById('res-cut-p').textContent = tdeeData.makro.cut.protein + 'g';
+            document.getElementById('res-cut-k').textContent = tdeeData.makro.cut.karbo + 'g';
+            document.getElementById('res-cut-l').textContent = tdeeData.makro.cut.lemak + 'g';
+            document.getElementById('res-maintain').textContent = tdeeData.maintain.toLocaleString('id-ID') + ' kkal';
+            document.getElementById('res-main-p').textContent = tdeeData.makro.maintain.protein + 'g';
+            document.getElementById('res-main-k').textContent = tdeeData.makro.maintain.karbo + 'g';
+            document.getElementById('res-main-l').textContent = tdeeData.makro.maintain.lemak + 'g';
+            document.getElementById('res-bulk').textContent = tdeeData.bulk.toLocaleString('id-ID') + ' kkal';
+            document.getElementById('res-bulk-p').textContent = tdeeData.makro.bulk.protein + 'g';
+            document.getElementById('res-bulk-k').textContent = tdeeData.makro.bulk.karbo + 'g';
+            document.getElementById('res-bulk-l').textContent = tdeeData.makro.bulk.lemak + 'g';
+            
+            renderDashboard();
+            
+            btn.innerHTML = '🔥 Hitung TDEE Saya';
+            btn.disabled = false;
+            
+            showAlert('✅ TDEE berhasil dihitung!', 'success');
+        }
+
+        function initMealPlanner(){
+            if(foodDatabase.length === 0) return;
+            var c = document.getElementById('meal-slots');
+            c.innerHTML = '';
+            
+            MEALS.forEach(function(slot, i){
+                var d = document.createElement('div');
+                d.className = 'meal-slot';
+                d.innerHTML = '<div style="font-weight: 700; color: var(--gradient-1); margin-bottom: 12px; font-size: 1.05rem;">🍽️ ' + slot + '</div>' +
+                    '<div style="display: grid; grid-template-columns: 1.2fr 100px 90px 90px 90px 90px; gap: 8px; margin-bottom: 6px; padding: 0 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.6;">' +
+                    '<span>Makanan</span><span>Berat (g)</span><span>Kalori</span><span>Protein</span><span>Karbohidrat</span><span>Lemak</span></div>' +
+                    '<div id="meal-' + slot + '">' + [1, 2, 3].map(function(j){
+                        return '<div class="meal-row">' +
+                            '<select class="food-select" onchange="hitungMeal(\'' + slot + '\')" style="padding: 10px; background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--white); font-size: 0.85rem;">' +
+                            '<option value="">Pilih makanan...</option>' + foodDatabase.map(function(f){
+                                return '<option value="' + f.nama + '" data-k="' + f.kalori + '" data-p="' + f.protein + '" data-c="' + f.karbo + '" data-l="' + f.lemak + '">' + f.nama + ' (' + f.kalori + ' kkal/100g)</option>';
+                            }).join('') + '</select>' +
+                            '<input type="number" class="food-gram" placeholder="gram" value="100" onchange="hitungMeal(\'' + slot + '\')" style="padding: 10px; background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--white); font-size: 0.85rem;">' +
+                            '<span class="food-kal" style="text-align: center; font-weight: 600; color: var(--gradient-1); font-size: 0.85rem;">0 <small style="opacity: 0.6;">kkal</small></span>' +
+                            '<span class="food-prot" style="text-align: center; font-size: 0.85rem;">0 <small style="opacity: 0.6;">g</small></span>' +
+                            '<span class="food-karb" style="text-align: center; font-size: 0.85rem;">0 <small style="opacity: 0.6;">g</small></span>' +
+                            '<span class="food-lem" style="text-align: center; font-size: 0.85rem;">0 <small style="opacity: 0.6;">g</small></span>' +
+                            '</div>';
+                    }).join('') + '</div>' +
+                    '<div style="text-align: right; font-weight: 700; color: var(--gradient-1); margin-top: 10px; padding-top: 12px; border-top: 1px dashed var(--glass-border); font-size: 0.95rem;">Subtotal: <span id="sub-' + slot + '">0 kkal | Protein: 0g | Karbohidrat: 0g | Lemak: 0g</span></div>';
+                c.appendChild(d);
+            });
+            
+            hitungTotalMeal();
+        }
+
+        function hitungMeal(slot){
+            var el = document.getElementById('meal-' + slot);
+            if(!el) return;
+            var rows = el.querySelectorAll('.meal-row');
+            var sk = 0, sp = 0, skc = 0, sl = 0;
+            
+            rows.forEach(function(row){
+                var sel = row.querySelector('.food-select');
+                var gram = row.querySelector('.food-gram');
+                var opt = sel.options[sel.selectedIndex];
+                
+                if(opt.value){
+                    var g = parseFloat(gram.value) || 0;
+                    var r = g / 100;
+                    sk += Math.round(parseFloat(opt.dataset.k) * r);
+                    sp += parseFloat(opt.dataset.p) * r;
+                    skc += parseFloat(opt.dataset.c) * r;
+                    sl += parseFloat(opt.dataset.l) * r;
+                    
+                    row.querySelector('.food-kal').innerHTML = Math.round(parseFloat(opt.dataset.k) * r) + ' <small style="opacity: 0.6;">kkal</small>';
+                    row.querySelector('.food-prot').innerHTML = Math.round(parseFloat(opt.dataset.p) * r * 10) / 10 + ' <small style="opacity: 0.6;">g</small>';
+                    row.querySelector('.food-karb').innerHTML = Math.round(parseFloat(opt.dataset.c) * r * 10) / 10 + ' <small style="opacity: 0.6;">g</small>';
+                    row.querySelector('.food-lem').innerHTML = Math.round(parseFloat(opt.dataset.l) * r * 10) / 10 + ' <small style="opacity: 0.6;">g</small>';
+                } else {
+                    row.querySelector('.food-kal').innerHTML = '0 <small style="opacity: 0.6;">kkal</small>';
+                    row.querySelector('.food-prot').innerHTML = '0 <small style="opacity: 0.6;">g</small>';
+                    row.querySelector('.food-karb').innerHTML = '0 <small style="opacity: 0.6;">g</small>';
+                    row.querySelector('.food-lem').innerHTML = '0 <small style="opacity: 0.6;">g</small>';
+                }
+            });
+            
+            document.getElementById('sub-' + slot).textContent = sk + ' kkal | Protein: ' + Math.round(sp * 10) / 10 + 'g | Karbohidrat: ' + Math.round(skc * 10) / 10 + 'g | Lemak: ' + Math.round(sl * 10) / 10 + 'g';
+            hitungTotalMeal();
+        }
+
+        function hitungTotalMeal(){
+            var tk = 0, tp = 0, tkc = 0, tl = 0;
+            
+            MEALS.forEach(function(slot){
+                var el = document.getElementById('meal-' + slot);
+                if(!el) return;
+                var rows = el.querySelectorAll('.meal-row');
+                
+                rows.forEach(function(row){
+                    var sel = row.querySelector('.food-select');
+                    var gram = row.querySelector('.food-gram');
+                    var opt = sel.options[sel.selectedIndex];
+                    
+                    if(opt.value){
+                        var g = parseFloat(gram.value) || 0;
+                        var r = g / 100;
+                        tk += Math.round(parseFloat(opt.dataset.k) * r);
+                        tp += parseFloat(opt.dataset.p) * r;
+                        tkc += parseFloat(opt.dataset.c) * r;
+                        tl += parseFloat(opt.dataset.l) * r;
+                    }
+                });
+            });
+            
+            document.getElementById('meal-total-kalori').textContent = tk.toLocaleString('id-ID') + ' kkal';
+            document.getElementById('meal-total-p').textContent = Math.round(tp * 10) / 10 + 'g';
+            document.getElementById('meal-total-k').textContent = Math.round(tkc * 10) / 10 + 'g';
+            document.getElementById('meal-total-l').textContent = Math.round(tl * 10) / 10 + 'g';
+            
+            var tgt = tdeeData ? tdeeData.maintain : 2000;
+            var sisa = tgt - tk;
+            var st = document.getElementById('meal-status');
+            
+            if(sisa > 0){
+                st.innerHTML = '<span style="display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: rgba(0,212,170,0.2); color: var(--gradient-1); border: 1px solid rgba(0,212,170,0.3);">✅ Masih ' + sisa.toLocaleString('id-ID') + ' kkal tersisa</span>';
+            } else if(sisa < 0){
+                st.innerHTML = '<span style="display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: rgba(231,111,81,0.2); color: #e76f51; border: 1px solid rgba(231,111,81,0.3);">⚠️ Over ' + Math.abs(sisa).toLocaleString('id-ID') + ' kkal</span>';
+            } else {
+                st.innerHTML = '<span style="display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: rgba(0,212,170,0.2); color: var(--gradient-1); border: 1px solid rgba(0,212,170,0.3);">🎯 Tepat target!</span>';
+            }
+        }
+
+        function simpanMealPlan(){
+            var items = [];
+            MEALS.forEach(function(slot){
+                var el = document.getElementById('meal-' + slot);
+                if(!el) return;
+                var rows = el.querySelectorAll('.meal-row');
+                
+                rows.forEach(function(row){
+                    var sel = row.querySelector('.food-select');
+                    var gram = row.querySelector('.food-gram');
+                    if(sel.value) items.push({slot: slot, nama: sel.value, gram: gram.value});
+                });
+            });
+            
+            localStorage.setItem('dietsmart_mealplan', JSON.stringify(items));
+            showAlert('✅ Meal plan disimpan!', 'success');
+            document.getElementById('status-meal').textContent = '✅ Sudah';
+            document.getElementById('status-meal').style.color = 'var(--gradient-1)';
+        }
+
+        function renderProgress(){
+            var tb = document.getElementById('progress-tbody');
+            if(!tb) return;
+            
+            if(!progressData || !progressData.length){
+                tb.innerHTML = '<tr><td colspan="6" style="text-align: center; opacity: 0.6; padding: 30px;">Belum ada data</td></tr>';
+                return;
+            }
+            
+            tb.innerHTML = progressData.map(function(p, i){
+                return '<tr><td>' + (i + 1) + '</td><td>' + p.tanggal + '</td><td><strong>' + p.berat + '</strong> kg</td><td>' + (p.pinggang || '-') + ' cm</td><td>' + (p.perut || '-') + ' cm</td><td style="font-size: 0.85rem; opacity: 0.7;">' + (p.catatan || '') + '</td></tr>';
+            }).join('');
+        }
+
+        function simpanProgress(){
+            var entry = {
+                tanggal: document.getElementById('prog-tanggal').value,
+                berat: parseFloat(document.getElementById('prog-berat').value),
+                pinggang: parseFloat(document.getElementById('prog-pinggang').value) || 0,
+                perut: parseFloat(document.getElementById('prog-perut').value) || 0,
+                catatan: document.getElementById('prog-catatan').value,
+                timestamp: Date.now()
+            };
+            
+            if(!entry.tanggal || !entry.berat){
+                showAlert('⚠️ Tanggal dan berat wajib diisi', 'error');
+                return;
+            }
+            
+            progressData.push(entry);
+            progressData.sort(function(a, b){ return a.timestamp - b.timestamp; });
+            
+            localStorage.setItem('dietsmart_progress', JSON.stringify(progressData));
+            
+            renderProgress();
+            document.getElementById('status-progress').textContent = '✅ Sudah';
+            document.getElementById('status-progress').style.color = 'var(--gradient-1)';
+            
+            showAlert('✅ Progress disimpan!', 'success');
+        }
+
+        function initCheatSheet(){
+            var c = document.getElementById('cs-content');
+            if(!c) return;
+            if(!foodDatabase.length){ c.innerHTML = '<p>Database belum dimuat.</p>'; return; }
+            
+            var cats = {};
+            foodDatabase.forEach(function(f){ if(!cats[f.kategori]) cats[f.kategori] = []; cats[f.kategori].push(f); });
+            
+            c.innerHTML = Object.keys(cats).map(function(k){
+                return '<div style="margin-bottom: 24px;">' +
+                    '<div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: var(--white); padding: 14px 20px; border-radius: 16px 16px 0 0; font-weight: 700; font-size: 0.95rem;">🍽️ ' + k + '</div>' +
+                    '<div style="background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 0 0 16px 16px; padding: 16px; border-top: none;">' +
+                    '<div style="display: grid; grid-template-columns: 1.2fr 100px 90px 90px 90px 90px; gap: 8px; margin-bottom: 6px; padding: 0 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.6;">' +
+                    '<span>Nama</span><span>Kalori</span><span>Protein</span><span>Karbohidrat</span><span>Lemak</span><span>Porsi</span></div>' +
+                    cats[k].map(function(f){
+                        return '<div style="padding: 12px 0; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">' +
+                            '<div><strong>' + f.nama + '</strong></div>' +
+                            '<div style="display: flex; gap: 12px; font-size: 0.85rem;">' +
+                            '<span>' + f.kalori + ' kkal</span>' +
+                            '<span>' + f.protein + 'g P</span>' +
+                            '<span>' + f.karbo + 'g K</span>' +
+                            '<span>' + f.lemak + 'g L</span>' +
+                            '<span style="opacity: 0.5;">' + f.porsi + 'g</span>' +
+                            '</div></div>';
+                    }).join('') + '</div></div>';
+            }).join('');
+        }
+
+        function showAlert(msg, type){
+            var a = document.createElement('div');
+            a.className = 'alert alert-' + type;
+            a.textContent = msg;
+            var c = document.querySelector('.container');
+            if(c) c.insertBefore(a, c.children[1]);
+            else document.body.appendChild(a);
+            setTimeout(function(){ a.remove(); }, 4000);
+        }
+
+        // Safe init
+        if(document.readyState === 'loading'){
+            document.addEventListener('DOMContentLoaded', function(){ init(); });
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
