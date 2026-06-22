@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitMe - Aktivasi Kalkulator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { color: #1a1a2e; font-size: 32px; font-weight: 700; }
+        .logo span { color: #e94560; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px; }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus { outline: none; border-color: #e94560; }
+        input::placeholder { color: #aaa; }
+        .code-input { text-transform: uppercase; letter-spacing: 2px; font-family: 'Courier New', monospace; font-weight: bold; }
+        button {
+            width: 100%;
+            padding: 16px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background: #c73e54; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .message {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 10px;
+            display: none;
+            font-size: 14px;
+        }
+        .message.success { display: block; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .message.error { display: block; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .message.info { display: block; background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .loading { display: none; text-align: center; margin-top: 20px; }
+        .loading.show { display: block; }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #e94560;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .help-text {
+            margin-top: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+        .help-text strong { color: #333; }
+        .hidden { display: none; }
+        .calculator-link { text-align: center; margin-top: 20px; }
+        .calculator-link a { color: #e94560; text-decoration: none; font-weight: 600; }
+        .calculator-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>Fit<span>Me</span></h1>
+        </div>
+        <p class="subtitle">Aktivasi Kalkulator 2026</p>
+        
+        <div id="step1">
+            <div class="form-group">
+                <label for="code">Kode Lisensi</label>
+                <input type="text" id="code" class="code-input" placeholder="FITME-2026A-XXXXXX" maxlength="20">
+            </div>
+            <button onclick="validateCode()" id="btnValidate">Cek Kode</button>
+        </div>
+        
+        <div id="step2" class="hidden">
+            <div class="form-group">
+                <label for="email">Email Anda</label>
+                <input type="email" id="email" placeholder="nama@email.com">
+            </div>
+            <button onclick="activateCode()" id="btnActivate">Aktifkan Sekarang</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Memproses...</p>
+        </div>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="help-text">
+            <strong>Cara mendapatkan kode:</strong><br>
+            1. Beli ebook FitMe di platform yang tersedia<br>
+            2. Kode lisensi akan dikirim ke email Anda<br>
+            3. Masukkan kode di atas untuk aktivasi
+        </div>
+        
+        <div class="calculator-link hidden" id="calculatorLink">
+            <a href="https://kalkulator.fitme.id" target="_blank">Buka Kalkulator FitMe →</a>
+        </div>
+    </div>
+
+    <script>
+        // GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+        const API_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+        
+        let currentCode = '';
+        
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+        }
+        
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+        }
+        
+        function hideMessage() {
+            document.getElementById('message').className = 'message';
+        }
+        
+        async function validateCode() {
+            const codeInput = document.getElementById('code');
+            const code = codeInput.value.trim().toUpperCase();
+            
+            if (!code) {
+                showMessage('Masukkan kode lisensi', 'error');
+                return;
+            }
+            
+            if (!code.startsWith('FITME-2026A-')) {
+                showMessage('Format kode tidak valid', 'error');
+                return;
+            }
+            
+            hideMessage();
+            showLoading(true);
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'validate', code: code })
+                });
+                
+                const data = await response.json();
+                
+                if (data.valid) {
+                    currentCode = code;
+                    showMessage('Kode valid! Silakan lanjutkan aktivasi.', 'success');
+                    document.getElementById('step1').classList.add('hidden');
+                    document.getElementById('step2').classList.remove('hidden');
+                } else {
+                    showMessage(data.message || 'Kode tidak valid', 'error');
+                }
+            } catch (error) {
+                showMessage('Terjadi kesalahan. Coba lagi.', 'error');
+                console.error(error);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function activateCode() {
+            const email = document.getElementById('email').value.trim();
+            
+            if (!email || !email.includes('@')) {
+                showMessage('Masukkan email yang valid', 'error');
+                return;
+            }
+            
+            hideMessage();
+            showLoading(true);
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'activate', code: currentCode, email: email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    document.getElementById('step2').classList.add('hidden');
+                    document.getElementById('calculatorLink').classList.remove('hidden');
+                    localStorage.setItem('fitme_activated', 'true');
+                    localStorage.setItem('fitme_code', currentCode);
+                    localStorage.setItem('fitme_email', email);
+                } else {
+                    showMessage(data.message || 'Aktivasi gagal', 'error');
+                }
+            } catch (error) {
+                showMessage('Terjadi kesalahan. Coba lagi.', 'error');
+                console.error(error);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        document.getElementById('code')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') validateCode();
+        });
+        
+        document.getElementById('email')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') activateCode();
+        });
+        
+        window.addEventListener('load', function() {
+            if (localStorage.getItem('fitme_activated') === 'true') {
+                showMessage('Kalkulator sudah aktif di device ini!', 'success');
+                document.getElementById('calculatorLink').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
